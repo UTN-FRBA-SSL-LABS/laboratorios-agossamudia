@@ -53,4 +53,4 @@ int Contains(const char *s, char c) {
             return 1;
     return 0;
 }
-}
+
