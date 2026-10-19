@@ -277,7 +277,7 @@ Los tests de `IsEmpty` ya están activos en `StringTest.c`. Corré `make test` y
 
 **P1** — `IsEmpty` podría haberse escrito también como `return s[0] == '\0'`. ¿Son equivalentes? ¿Por qué?
 
-> R:
+> R:Son equivalentes ya que las dos expresiones acceden al primer caracter del string
 
 ---
 
@@ -328,14 +328,14 @@ make test
 
 **P2** — ¿Qué hace `s + 1`? ¿Por qué avanza al siguiente carácter y no al siguiente byte?
 
-> R:
+> R:s+1 mueve el puntero al siguiente elemento del string, cuando le sumas 1 a un puntero avanza lo que ocupa el tipo al que apunta. Como un char ocupa un byte, en este caso pasar al siguiente caracter y al siguiente byte es lo mismo.
 
 **P3** — Si llamaras a `GetLength(NULL)`, ¿qué pasaría? ¿Por qué las precondiciones del contrato dicen `s != NULL`?
 
-> R:
+> R:Se rompería el programa (tira segmentation fault). GetLength llama a IsEmpty, que intenta leer el primer caracter con *s, pero NULL no apunta a nada, así que no hay nada que leer. Por eso la precondición pide s != NULL: la función no se fija si le pasaron NULL, entonces el que la usa tiene que asegurarse de pasarle un string de verdad.
 
 ```
-GETLENGTH_PASA=
+GETLENGTH_PASA=SI
 ```
 _(escribí SI cuando todos los tests de GetLength pasen)_
 
@@ -367,7 +367,7 @@ El `while` termina cuando alguna de las dos cadenas llega a `'\0'`. Después dev
 
 **P4** — ¿Qué dos casos están mal cubiertos por `return 1`? Describí un ejemplo para cada uno.
 
-> R:
+> R:Falla cuando un string es más largo que el otro pero empiezan igual, por ejemplo AreEqual("abc", "ab") y AreEqual("ab", "abc"). El while corta cuando se termina el más corto y devuelve 1 aunque no son iguales.
 
 #### Corrección
 
@@ -384,7 +384,7 @@ make test
 ```
 
 ```
-AREEQUAL_PASA=
+AREEQUAL_PASA=SI
 ```
 _(escribí SI cuando todos los tests de AreEqual pasen)_
 
@@ -414,7 +414,7 @@ int AreDecimalDigits(const char *s) {
 
 **P5** — ¿Por qué la cadena vacía no debería considerarse un conjunto de dígitos decimales? Pensalo desde la especificación matemática.
 
-> R:
+> R:Porque la especificación dice que AreDecimalDigits(ε) = 0, para que sea un número tiene que haber al menos un dígito. Un string vacío no tiene ningún dígito, así que no puede ser un número
 
 #### Corrección
 
@@ -425,7 +425,7 @@ make test
 ```
 
 ```
-AREDECIMALDIGITS_PASA=
+AREDECIMALDIGITS_PASA=SI
 ```
 _(escribí SI cuando todos los tests de AreDecimalDigits pasen)_
 
@@ -452,7 +452,7 @@ make test
 ```
 
 ```
-CONTAINS_PASA=
+CONTAINS_PASA=SI
 ```
 _(escribí SI cuando todos los tests de Contains pasen)_
 
@@ -494,7 +494,7 @@ int ToInteger(const char *s) {
 
 **P7** — El loop acumula correctamente el valor en `resultado`. ¿Qué está mal en el `return`?
 
-> R:
+> R:Devuelve solo signo, que vale 1 o -1, y no usa nunca el número que se armó en resultado. Tendría que devolver el signo multiplicado por el resultado
 
 #### Corrección
 
@@ -506,10 +506,10 @@ make test
 
 **P8** — La expresión `*s - '0'` convierte un carácter dígito al entero correspondiente. ¿Por qué funciona? ¿Qué devuelve `'3' - '0'`?
 
-> R:
+> R:Porque en C cada carácter en realidad es un número, su código ASCII, y los dígitos están todos seguidos: el '0' es 48, el '1' es 49 y así. Entonces si a un dígito le resto '0', me queda su valor.'3' - '0' es 51 - 48, que da 3.
 
 ```
-TOINTEGER_PASA=
+TOINTEGER_PASA=SI
 ```
 _(escribí SI cuando todos los tests de ToInteger pasen)_
 
@@ -589,7 +589,7 @@ Salida esperada:
 ```
 
 ```
-LONGITUDES_PASA=
+LONGITUDES_PASA=SI
 ```
 _(SI o NO)_
 
@@ -616,7 +616,7 @@ make mayorlongitud
 ```
 
 ```
-MAYORLONGITUD_PASA=
+MAYORLONGITUD_PASA=SI
 ```
 _(SI o NO)_
 
@@ -635,7 +635,7 @@ make todosiguales
 ```
 
 ```
-TODOSIGUALES_PASA=
+TODOSIGUALES_PASA=SI
 ```
 _(SI o NO)_
 
@@ -652,7 +652,7 @@ make suma
 ```
 
 ```
-SUMA_PASA=
+SUMA_PASA=SI
 ```
 _(SI o NO)_
 
@@ -662,15 +662,15 @@ _(SI o NO)_
 
 **P10** — `GetLength` es recursiva pero en C una llamada recursiva consume un stack frame. Si llamaras `GetLength` con un string de 1.000.000 de caracteres, ¿qué pasaría? ¿Cómo lo resolverías?
 
-> R:
+> R:Se reompería el programa, cada llamada a GetLength ocupa un lugar en el stack y no se libera hasta que terminan todas, así que con un millón de caracteres se acumulan un millón de llamadas y el stack se llena.
 
 **P11** — En la Parte III, todos los programas usan `char **arg` para iterar en vez de un índice entero. ¿Qué ventaja tiene este estilo? ¿Cuándo sería preferible usar el índice?
 
-> R:
+> R:La ventaja es que no necesito argc y voy avanzando hasta llegar al NULL, como hago con los strings hasta el '\0'. Además queda más corto, uso *arg en vez de argv[i]. Usaría el índice si necesito saber en qué posición está cada argumento, por ejemplo para mostrar “argumento 2”, o si quiero recorrerlos al revés
 
 **P12** — En C, `"hola"` es un literal de tipo `const char *`. Si intentaras modificar un carácter con `s[0] = 'H'`, el comportamiento es indefinido. ¿Por qué? ¿En qué parte de la memoria viven los literales?
 
-> R:
+> R:Porque los literales como "hola" se guardan en memoria estática, en una parte que es de solo lectura. Si intento cambiar una letra con s[0] = 'H', no me deja escribir ahí y lo más probable es que el programa se rompa. Si quiero poder modificarlo, lo tengo que guardar como char s[] = "hola", que hace una copia en el stack.
 
 ---
 
